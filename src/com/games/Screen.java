@@ -2,10 +2,13 @@ package com.games;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Objects;
+import java.util.Random;
 
 
-
-public class Screen extends JFrame {
+public class Screen extends JFrame implements ActionListener {
     JPanel panel;
     JPanel dashBoard;
     JPanel playerPanel;
@@ -17,9 +20,15 @@ public class Screen extends JFrame {
     JLabel currentPlayer;
     String[] playerNums={"1","2","3"};
     JComboBox comboBox=new JComboBox(playerNums);
+    int player=1;
+    int maxPlayer=0;
     Icon boardImg;
     JButton board;
     JButton rollDiceButton;
+    JButton saveSettings;
+    JButton restartGame;
+
+    Random random=new Random();
     Screen(){
         // Window setups
         setBounds(200, 100, 890, 630);
@@ -59,6 +68,8 @@ public class Screen extends JFrame {
         currentMoveLabel =new JLabel();
         currentPlayer =new JLabel();
         rollDiceButton=new JButton();
+        saveSettings=new JButton();
+        restartGame=new JButton();
 
         dashBoard.setBounds(600,0,300,600);
         dashBoard.setLayout(null);
@@ -73,12 +84,25 @@ public class Screen extends JFrame {
 
         comboBox.setBounds(230,70,40,20);
 
+        saveSettings.setText("Save");
+        saveSettings.setBounds(20,120,100,30);
+        saveSettings.addActionListener(this);
+        saveSettings.setFocusable(false);
+
+        restartGame.setText("Restart");
+        restartGame.setBounds(140,120,100,30);
+        restartGame.addActionListener(this);
+        restartGame.setEnabled(false);
+        restartGame.setFocusable(false);
+
         playerPanel.setBounds(0,0,300,300);
         playerPanel.setBackground(Color.lightGray);
         playerPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
         playerPanel.setLayout(null);
         playerPanel.add(playersLabel);
         playerPanel.add(enterNumOfPlayers);
+        playerPanel.add(saveSettings);
+        playerPanel.add(restartGame);
         playerPanel.add(comboBox);
 
         currentMoveLabel.setText("Current Move : ");
@@ -89,28 +113,70 @@ public class Screen extends JFrame {
         currentPlayer.setForeground(Color.darkGray);
         currentPlayer.setBounds(140,40,100,40);
 
-        diceNumber.setText("6");
+        diceNumber.setText("0");
         diceNumber.setFont(new Font("Arial",Font.BOLD,64));
         diceNumber.setForeground(Color.darkGray);
         diceNumber.setBounds(130,80,100,100);
 
         rollDiceButton.setText("Roll");
+        rollDiceButton.setEnabled(false);
         rollDiceButton.setBounds(100,200,100,40);
         rollDiceButton.setFocusable(false);
+        rollDiceButton.addActionListener(this);
 
         dice.setBounds(0,300,300,300);
         dice.setBackground(Color.lightGray);
         dice.setBorder(BorderFactory.createLineBorder(Color.gray));
         dice.setLayout(null);
+
         dice.add(currentMoveLabel);
         dice.add(currentPlayer);
         dice.add(diceNumber);
         dice.add(rollDiceButton);
-
         dashBoard.setVisible(true);
-
         dashBoard.add(dice);
         dashBoard.add(playerPanel);
         return dashBoard;
+    }
+    private int rollDice(){
+        int n=random.nextInt(7);
+        if(n==0) {
+            n=rollDice();
+        }
+        return n;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource()==rollDiceButton){
+
+            if(player<=maxPlayer){
+                currentPlayer.setText("Player "+player);
+                player++;
+                if(player==4){
+                    player=1;
+                }
+            }else{
+                player=1;
+                currentPlayer.setText("Player "+player);
+            }
+            System.out.println(player);
+            diceNumber.setText(""+rollDice());
+
+        }
+        if(e.getSource()==saveSettings){
+            maxPlayer= Integer.parseInt(Objects.requireNonNull(comboBox.getSelectedItem()).toString());
+            rollDiceButton.setEnabled(true);
+            restartGame.setEnabled(true);
+            comboBox.setEnabled(false);
+            saveSettings.setEnabled(false);
+        }
+        if(e.getSource()==restartGame){
+            rollDiceButton.setEnabled(false);
+            comboBox.setEnabled(true);
+            saveSettings.setEnabled(true);
+            restartGame.setEnabled(false);
+            comboBox.setSelectedIndex(0);
+        }
     }
 }
